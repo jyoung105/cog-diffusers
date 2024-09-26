@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+# Run this before you deploy it on replicate, because if you don't whenever you run the model, 
+# it will download the weights from the internet, which will take a long time.
+
+import os
+import sys
+
+import torch
+
+from diffusers import StableDiffusionXLPipeline
+from huggingface_hub import hf_hub_download
+
+sys.path.append('.') # append project directory to path so predict.py can be imported
+
+from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE
+
+
+# Set to True for faster uploads and downloads from the Hub using hf_transfer.
+# https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhubenablehftransfer
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"]="1"
+
+
+# Download model, vae
+hf_hub_download(MODEL_ID, "playground-v2.fp16.safetensors", local_dir=TOTAL_CACHE)
+
+
+pipe = StableDiffusionXLPipeline.from_single_file(
+    f"{TOTAL_CACHE}/playground-v2.fp16.safetensors",
+    # variant="fp16",
+    torch_dtype=torch.float16,
+    use_safetensors=True,
+)
+
+
+# TODO - we don't need to save all of this and in fact should save just the unet, tokenizer, and config.
+pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
+
+
+# delete model file to decrease the size of docker image
+if os.path.isfile(f"{TOTAL_CACHE}/playground-v2.fp16.safetensors"):
+    os.remove(f"{TOTAL_CACHE}/playground-v2.fp16.safetensors")
