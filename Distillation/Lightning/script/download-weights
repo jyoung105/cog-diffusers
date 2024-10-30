@@ -14,7 +14,7 @@ from safetensors.torch import load_file
 
 sys.path.append('.') # append project directory to path so predict.py can be imported
 
-from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE, VAE_ID, LIGHTNING_REPO, LIGHTNING_ID, DEVICE
+from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE, VAE_ID, LIGHTNING_ID, LIGHTNING_FILE, DEVICE
 
 
 # Set to True for faster uploads and downloads from the Hub using hf_transfer.
@@ -26,14 +26,14 @@ os.environ["HF_HUB_ENABLE_HF_TRANSFER"]="1"
 hf_hub_download(VAE_ID, "sdxl.vae.safetensors", local_dir=TOTAL_CACHE)
 hf_hub_download(MODEL_ID, "sd_xl_base_1.0.safetensors", local_dir=TOTAL_CACHE)
 hf_hub_download(MODEL_ID, "unet/config.json", local_dir=TOTAL_CACHE)
-hf_hub_download(LIGHTNING_REPO, LIGHTNING_ID, local_dir=TOTAL_CACHE)
+hf_hub_download(LIGHTNING_ID, LIGHTNING_FILE, local_dir=TOTAL_CACHE)
 
 
 unet = UNet2DConditionModel.from_config(
     TOTAL_CACHE, 
     subfolder="unet"
 ).to(DEVICE, torch.float16)
-unet.load_state_dict(load_file(f"{TOTAL_CACHE}/{LIGHTNING_ID}", device=DEVICE))
+unet.load_state_dict(load_file(f"{TOTAL_CACHE}/{LIGHTNING_FILE}", device=DEVICE))
 
 vae = AutoencoderKL.from_single_file(
     f"{TOTAL_CACHE}/sdxl.vae.safetensors", 
@@ -53,7 +53,6 @@ pipe.scheduler = EulerDiscreteScheduler.from_config(
     pipe.scheduler.config,
     timestep_spacing="trailing",
 )
-
 
 # TODO - we don't need to save all of this and in fact should save just the unet, tokenizer, and config.
 pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
