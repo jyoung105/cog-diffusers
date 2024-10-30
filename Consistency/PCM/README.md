@@ -30,6 +30,3 @@ cog run script/download-weights
 ```
 cog predict -i prompt="an illustration of a man with hoodie on"
 ```
-
-## Memo
-- check the quality issue
