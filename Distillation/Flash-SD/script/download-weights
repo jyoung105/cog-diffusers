@@ -6,14 +6,14 @@
 import os
 import sys
 
+sys.path.append('.')
+
 import torch
 
 from diffusers import StableDiffusionXLPipeline, AutoencoderKL, LCMScheduler
 from huggingface_hub import hf_hub_download
 
-sys.path.append('.') # append project directory to path so predict.py can be imported
-
-from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE, VAE_ID, FLASH_REPO, FLASH_ID
+from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE, VAE_ID, FLASH_ID, FLASH_FILE
 
 
 # Set to True for faster uploads and downloads from the Hub using hf_transfer.
@@ -44,12 +44,11 @@ pipe.scheduler = LCMScheduler.from_config(
     timestep_spacing="trailing",
 )
 
-
 # TODO - we don't need to save all of this and in fact should save just the unet, tokenizer, and config.
 pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
 
 # TODO - check the code to download and fetch lora on pipeline before
-hf_hub_download(FLASH_REPO, FLASH_ID, local_dir=TOTAL_CACHE)
+hf_hub_download(FLASH_ID, FLASH_FILE, local_dir=TOTAL_CACHE)
 
 
 # download embedding
