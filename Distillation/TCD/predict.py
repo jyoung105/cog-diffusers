@@ -31,7 +31,7 @@ set_verbosity(logging.ERROR)
 
 # GPU global variables
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DTYPE = torch.float16 if str(DEVICE).__contains__("cuda") else torch.float32
+DTYPE = torch.float16 if str(DEVICE).__contains__("cuda") else torch.float32 # fp16 or fp32
 
 
 # AI global variables
@@ -40,8 +40,9 @@ MODEL_CACHE = "./tcd-cache"
 
 MODEL_ID = "stabilityai/stable-diffusion-xl-base-1.0"
 VAE_ID = "madebyollin/sdxl-vae-fp16-fix"
-TCD_REPO = "h1t/TCD-SDXL-LoRA"
-TCD_ID = "pytorch_lora_weights.safetensors"
+
+TCD_ID = "h1t/TCD-SDXL-LoRA"
+TCD_FILE = "pytorch_lora_weights.safetensors"
 
 
 # Set safety checker
@@ -120,10 +121,6 @@ class Predictor(BasePredictor):
         self.pipe.load_textual_inversion(embedding_1["clip_g"], token="<ac_neg1>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
         self.pipe.load_textual_inversion(embedding_2["clip_l"], token="<ac_neg2>", text_encoder=self.pipe.text_encoder, tokenizer=self.pipe.tokenizer)
         self.pipe.load_textual_inversion(embedding_2["clip_g"], token="<ac_neg2>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
-        # self.pipe.load_textual_inversion(embedding_3["clip_l"], token="<beyond_sdxl>", text_encoder=self.pipe.text_encoder, tokenizer=self.pipe.tokenizer)
-        # self.pipe.load_textual_inversion(embedding_3["clip_g"], token="<beyond_sdxl>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
-        # self.pipe.load_textual_inversion(embedding_4["clip_l"], token="<unaesthetic>", text_encoder=self.pipe.text_encoder, tokenizer=self.pipe.tokenizer)
-        # self.pipe.load_textual_inversion(embedding_4["clip_g"], token="<unaesthetic>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
         
         
         # 5. Add LoRA
@@ -133,11 +130,12 @@ class Predictor(BasePredictor):
         
         # self.pipe.set_adapters(["<add_detail>", "<noise_offset>", "<art_full>"], adapter_weights=[0.5, 0.5, 0.5])
         
-        self.pipe.load_lora_weights(TOTAL_CACHE, weight_name=TCD_ID, local_files_only=True)
+        self.pipe.load_lora_weights(TOTAL_CACHE, weight_name=TCD_FILE, local_files_only=True)
         self.pipe.fuse_lora()
         
         
         # 6. Save memory and improve speed
+        # Inference speed
         self.pipe.enable_vae_slicing()
         self.pipe.enable_vae_tiling()
         self.pipe.enable_attention_slicing()
@@ -185,12 +183,13 @@ class Predictor(BasePredictor):
     ):
         flush()
         print(f"[Debug] Prompt: {prompt}")
-        
         generator = torch.Generator(device=DEVICE).manual_seed(seed)
+        
         
         # Convert prompt, negative_prompt to embeddings
         conditioning, pooled = self.compel(prompt)
         # neg_conditioning, neg_pooled = self.compel(negative_prompt) # error when we use more than 2 embeddings
+        
         
         image_list = self.pipe(
             prompt_embeds=conditioning,
