@@ -31,9 +31,3 @@ cog run script/download-weights
 ```
 cog predict -i prompt="an illustration of a man with hoodie on"
 ```
-
-### Memo
-```
-TODO - check why # ! doesn't work while #! works.
-#!/usr/bin/env python
-```
