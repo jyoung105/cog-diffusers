@@ -6,12 +6,12 @@
 import os
 import sys
 
+sys.path.append('.')
+
 import torch
 
 from diffusers import StableDiffusionXLPipeline, AutoencoderKL, EulerAncestralDiscreteScheduler
 from huggingface_hub import hf_hub_download
-
-sys.path.append('.') # append project directory to path so predict.py can be imported
 
 from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE, VAE_ID
 
@@ -43,7 +43,6 @@ pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(
     pipe.scheduler.config, 
     timestep_spacing="trailing"
 )
-
 
 # TODO - we don't need to save all of this and in fact should save just the unet, tokenizer, and config.
 pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
