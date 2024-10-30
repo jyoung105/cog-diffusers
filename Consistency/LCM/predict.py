@@ -28,9 +28,10 @@ from compel import Compel, ReturnedEmbeddingsType, DiffusersTextualInversionMana
 
 set_verbosity(logging.ERROR)
 
+
 # GPU global variables
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DTYPE = torch.float16 if str(DEVICE).__contains__("cuda") else torch.float32
+DTYPE = torch.float16 if str(DEVICE).__contains__("cuda") else torch.float32 # fp16 or fp32
 
 
 # AI global variables
@@ -40,8 +41,9 @@ LCM_CACHE = "./lcm-cache"
 
 MODEL_ID = "stabilityai/stable-diffusion-xl-base-1.0"
 VAE_ID = "madebyollin/sdxl-vae-fp16-fix"
-LCM_REPO = "latent-consistency/lcm-lora-sdxl"
-LCM_ID = "pytorch_lora_weights.safetensors"
+
+LCM_ID= "latent-consistency/lcm-lora-sdxl"
+LCM_FILE = "pytorch_lora_weights.safetensors"
 
 
 # Set safety checker
@@ -75,8 +77,8 @@ class Predictor(BasePredictor):
         # )
         self.pipe = StableDiffusionXLPipeline.from_pretrained(
             MODEL_CACHE,
-            # vae=self.vae,
             # image_encoder=self.image_encoder,
+            # vae=self.vae,
             variant="fp16",
             torch_dtype=torch.float16,
             use_safetensors=True,
@@ -120,10 +122,6 @@ class Predictor(BasePredictor):
         self.pipe.load_textual_inversion(embedding_1["clip_g"], token="<ac_neg1>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
         self.pipe.load_textual_inversion(embedding_2["clip_l"], token="<ac_neg2>", text_encoder=self.pipe.text_encoder, tokenizer=self.pipe.tokenizer)
         self.pipe.load_textual_inversion(embedding_2["clip_g"], token="<ac_neg2>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
-        # self.pipe.load_textual_inversion(embedding_3["clip_l"], token="<beyond_sdxl>", text_encoder=self.pipe.text_encoder, tokenizer=self.pipe.tokenizer)
-        # self.pipe.load_textual_inversion(embedding_3["clip_g"], token="<beyond_sdxl>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
-        # self.pipe.load_textual_inversion(embedding_4["clip_l"], token="<unaesthetic>", text_encoder=self.pipe.text_encoder, tokenizer=self.pipe.tokenizer)
-        # self.pipe.load_textual_inversion(embedding_4["clip_g"], token="<unaesthetic>", text_encoder=self.pipe.text_encoder_2, tokenizer=self.pipe.tokenizer_2)
 
 
         # 5. Add LoRA
@@ -133,15 +131,30 @@ class Predictor(BasePredictor):
 
         # self.pipe.set_adapters(["<add_detail>", "<noise_offset>", "<art_full>"], adapter_weights=[0.5, 0.5, 0.5])
 
-        self.pipe.load_lora_weights(LCM_CACHE, weight_name=LCM_ID, local_files_only=True)
+        self.pipe.load_lora_weights(LCM_CACHE, weight_name=LCM_FILE, local_files_only=True)
         self.pipe.fuse_lora()
 
 
         # 6. Save memory and improve speed
-        # self.pipe.fuse_qkv_projections()
-        
-        # self.pipe.enable_vae_slicing()
+        # Inference speed
+        self.pipe.enable_vae_slicing()
         self.pipe.enable_vae_tiling()
+        self.pipe.enable_attention_slicing()
+
+        # Memory
+        # self.pipe.enable_model_cpu_offload() # This optimization slightly reduces memory consumption, but is optimized for speed.
+        # self.pipe.enable_sequential_cpu_offload() # This optimization reduces memory consumption, but also reduces speed.
+        # self.pipe.enable_xformers_memory_efficient_attention() # useless for torch > 2.0, but if using torch < 2.0, this is an essential optimization.
+        
+        # PyTorch
+        # self.pipe.unet.set_attn_processor(AttnProcessor2_0())
+        self.pipe.fuse_qkv_projections()
+        self.pipe.unet.to(memory_format=torch.channels_last)
+        self.pipe.vae.to(memory_format=torch.channels_last)
+        
+        # self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True) # max-autotune or reduce-overhead
+        # self.pipe.vae.decode = torch.compile(self.pipe.vae.decode, mode="reduce-overhead", fullgraph=True)
+        self.pipe.upcast_vae()
         
         
         # 7. Setup Compel
@@ -171,12 +184,13 @@ class Predictor(BasePredictor):
     ):
         flush()
         print(f"[Debug] Prompt: {prompt}")
-        
         generator = torch.Generator(device=DEVICE).manual_seed(seed)
+        
         
         # Convert prompt, negative_prompt to embeddings
         conditioning, pooled = self.compel(prompt)
         # neg_conditioning, neg_pooled = self.compel(negative_prompt) # error when we use more than 2 embeddings
+        
         
         image_list = self.pipe(
             prompt_embeds=conditioning,

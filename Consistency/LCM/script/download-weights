@@ -3,17 +3,18 @@
 # Run this before you deploy it on replicate, because if you don't whenever you run the model, 
 # it will download the weights from the internet, which will take a long time.
 
+
 import os
 import sys
+
+sys.path.append('.')
 
 import torch
 
 from diffusers import StableDiffusionXLPipeline, AutoencoderKL, LCMScheduler
 from huggingface_hub import hf_hub_download
 
-sys.path.append('.') # append project directory to path so predict.py can be imported
-
-from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE, VAE_ID, LCM_REPO, LCM_ID, LCM_CACHE
+from predict import TOTAL_CACHE, MODEL_ID, MODEL_CACHE, VAE_ID, LCM_ID, LCM_FILE, LCM_CACHE
 
 
 # Set to True for faster uploads and downloads from the Hub using hf_transfer.
@@ -47,11 +48,13 @@ pipe.scheduler = LCMScheduler.from_config(
 pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
 
 # TODO - check the code to download and fetch lora on pipeline before
-hf_hub_download(LCM_REPO, LCM_ID, local_dir=LCM_CACHE)
+hf_hub_download(LCM_ID, LCM_FILE, local_dir=LCM_CACHE)
+
 
 # download embedding
 hf_hub_download("jyoung105/general-neg", "ac_neg1.safetensors", local_dir=TOTAL_CACHE)
 hf_hub_download("jyoung105/general-neg", "ac_neg2.safetensors", local_dir=TOTAL_CACHE)
+
 
 # delete model file to decrease the size of docker image
 if os.path.isfile(f"{TOTAL_CACHE}/sdxl.vae.safetensors"):
