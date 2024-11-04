@@ -2,12 +2,14 @@
 
 Latent Consistency Models: Synthesizing High-Resolution Images with Few-step Inference
 
+[![Replicate](https://replicate.com/jyoung105/lcm/badge)](https://replicate.com/jyoung105/lcm/)
+
 ## Reference
 
-- [project](https://latent-consistency-models.github.io/)
-- [arxiv](https://arxiv.org/abs/2310.04378)
-- [github](https://github.com/luosiallen/latent-consistency-model)
-- [hugging face](https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7)
+[![Project](https://img.shields.io/badge/Project-8A2BE2)](https://latent-consistency-models.github.io/)
+[![arXiv](https://img.shields.io/badge/arXiv-2310.04378-b31b1b.svg)](https://arxiv.org/abs/2310.04378)
+[![GitHub](https://img.shields.io/badge/GitHub-Repo-181717?logo=github)](https://github.com/luosiallen/latent-consistency-model)
+[![Hugging Face](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7)
 
 ## Try
 
