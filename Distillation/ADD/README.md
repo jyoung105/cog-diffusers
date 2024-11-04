@@ -2,12 +2,14 @@
 
 Adversarial Diffusion Distillation
 
+[![Replicate](https://replicate.com/jyoung105/sdxl-turbo/badge)](https://replicate.com/jyoung105/sdxl-turbo/)
+
 ## Reference
 
-- [project](https://stability.ai/news/stability-ai-sdxl-turbo)
-- [arxiv](https://arxiv.org/pdf/2311.17042)
-- [hugging face 1](https://huggingface.co/stabilityai/sdxl-turbo)
-- [hugging face 2](https://huggingface.co/stabilityai/sd-turbo)
+[![Project](https://img.shields.io/badge/Project-8A2BE2)](https://stability.ai/news/stability-ai-sdxl-turbo)
+[![arXiv](https://img.shields.io/badge/arXiv-2311.17042-b31b1b.svg)](https://arxiv.org/pdf/2311.17042)
+[![Hugging Face - SDXL](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](https://huggingface.co/stabilityai/sdxl-turbo)
+[![Hugging Face - SD15](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](https://huggingface.co/stabilityai/sd-turbo)
 
 ## Try
 
