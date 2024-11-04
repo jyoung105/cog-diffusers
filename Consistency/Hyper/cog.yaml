@@ -1,7 +1,7 @@
 # Configuration for Cog ⚙️
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
 
-image: "r8.im/jyoung105/hyper-sd"
+image: "r8.im/jyoung105/hyper-sdxl"
 build:
   gpu: true
   cuda: "12.4"

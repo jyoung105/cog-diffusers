@@ -2,13 +2,13 @@
 
 Hyper-SD: Trajectory Segmented Consistency Model for Efficient Image Synthesis
 
-This one is only working with SDXL. (btw, flux version was released, too.)
+[![Replicate](https://replicate.com/jyoung105/hyper-sdxl/badge)](https://replicate.com/jyoung105/hyper-sdxl/)
 
 ## Reference
 
-- [project](https://hyper-sd.github.io/)
-- [arxiv](https://arxiv.org/abs/2404.13686)
-- [hugging face](https://huggingface.co/ByteDance/Hyper-SD)
+[![Project](https://img.shields.io/badge/project-8A2BE2)](https://hyper-sd.github.io/)
+[![arXiv](https://img.shields.io/badge/arXiv-2404.13686-b31b1b.svg)](https://arxiv.org/abs/2404.13686)
+[![Hugging Face](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](https://huggingface.co/ByteDance/Hyper-SD)
 
 ## Try
 
