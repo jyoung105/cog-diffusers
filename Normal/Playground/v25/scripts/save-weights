@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+
+# #! SheBang #!<interpreter> [optional-arg]
+
+"""
+Run this script before deploying it on Replicate to pre-download model weights,
+which avoids long download times during runtime.
+"""
+
+# Standard library imports
+import os
+import sys
+
+# Add current directory to sys.path
+sys.path.append('.')
+
+# Third-party imports
+import torch
+from diffusers import StableDiffusionXLPipeline, EDMDPMSolverMultistepScheduler
+from huggingface_hub import hf_hub_download
+
+# Local imports
+from predict import (
+    TOTAL_CACHE,
+    MODEL_ID,
+    MODEL_FILE,
+    MODEL_CACHE,
+    DTYPE,
+)
+
+# Set environment variables
+# Enable hf_transfer for faster uploads and downloads from the Hub
+# https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhubenablehftransfer
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+
+
+def main():
+    # Load pipeline
+    pipe = StableDiffusionXLPipeline.from_single_file(
+        os.path.join(TOTAL_CACHE, MODEL_FILE),
+        torch_dtype=DTYPE,
+        use_safetensors=True,
+    )
+    
+    pipe.scheduler = EDMDPMSolverMultistepScheduler.from_config(
+        pipe.scheduler.config,
+    )
+
+    # TODO - we don't need to save all of this and in fact should save just the unet, tokenizer, and config.
+    pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
+
+    # Delete original model files to decrease the size of the Docker image
+    files_to_delete = [MODEL_FILE]
+    for filename in files_to_delete:
+        filepath = os.path.join(TOTAL_CACHE, filename)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+
+
+if __name__ == "__main__":
+    main()
