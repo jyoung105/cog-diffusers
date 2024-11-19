@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Download model
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download playgroundai/playground-v2-1024px-aesthetic playground-v2.fp16.safetensors --local-dir ./cache --local-dir-use-symlinks False
