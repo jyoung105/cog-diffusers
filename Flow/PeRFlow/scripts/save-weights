@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+# #! SheBang #!<interpreter> [optional-arg]
+
+"""
+Run this script before deploying it on Replicate to pre-download model weights,
+which avoids long download times during runtime.
+"""
+
+# Standard library imports
+import os
+import sys
+import shutil
+
+# Add current directory to sys.path
+sys.path.append('.')
+
+# Third-party imports
+import torch
+from diffusers import StableDiffusionXLPipeline, AutoencoderKL
+from huggingface_hub import hf_hub_download
+
+# Local imports
+from predict import (
+    TOTAL_CACHE,
+    MODEL_ID,
+    MODEL_CACHE,
+    VAE_ID,
+    REPO_CACHE,
+    DTYPE,
+)
+
+# Set environment variables
+# Enable hf_transfer for faster uploads and downloads from the Hub
+# https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhubenablehftransfer
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+
+
+def main():
+    # Load VAE
+    vae = AutoencoderKL.from_single_file(
+        os.path.join(TOTAL_CACHE, "sdxl.vae.safetensors"),
+        torch_dtype=DTYPE,
+    )
+
+    # Load pipeline
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        REPO_CACHE,
+        vae=vae,
+        variant="v0-fix",
+        torch_dtype=DTYPE,
+        use_safetensors=True,
+    )
+
+    # TODO: Optimize the saved pipeline to include only necessary components (unet, tokenizer, config)
+    pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
+
+    # Delete original model files to decrease the size of the Docker image
+    files_to_delete = ["sdxl.vae.safetensors"]
+    for filename in files_to_delete:
+        filepath = os.path.join(TOTAL_CACHE, filename)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+
+    # Delete original model directory to decrease the size of the Docker image
+    dir_to_delete = [REPO_CACHE]
+    for dirname in dir_to_delete:
+        shutil.rmtree(dirname)
+
+
+if __name__ == "__main__":
+    main()

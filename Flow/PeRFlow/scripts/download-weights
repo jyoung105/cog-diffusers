@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Download VAE
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download madebyollin/sdxl-vae-fp16-fix sdxl.vae.safetensors --local-dir ./cache --local-dir-use-symlinks False
+
+# Download model
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download hansyan/perflow-sdxl-base --local-dir ./repo-cache --local-dir-use-symlinks False
+
+# Download embeddings
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download jyoung105/general-neg ac_neg1.safetensors --local-dir ./cache --local-dir-use-symlinks False
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download jyoung105/general-neg ac_neg2.safetensors --local-dir ./cache --local-dir-use-symlinks False
