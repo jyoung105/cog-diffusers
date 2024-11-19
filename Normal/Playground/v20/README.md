@@ -7,7 +7,7 @@ Playground v2.0: A diffusion-based text-to-image generation model trained from s
 ## Reference
 
 [![Project](https://img.shields.io/badge/Project-8A2BE2)](https://playground.com/blog/playground-v2)
-[![Hugging Face](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](playgroundai/playground-v2-1024px-aesthetic)
+[![Hugging Face](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](https://huggingface.co/playgroundai/playground-v2-1024px-aesthetic)
 
 ## Example
 
