@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Download prior repo
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download stabilityai/stable-cascade-prior --local-dir ./prior-repo-cache --local-dir-use-symlinks False
+
+# Download decoder repo
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download stabilityai/stable-cascade --local-dir ./decoder-repo-cache --local-dir-use-symlinks False

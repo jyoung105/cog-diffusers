@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+
+# #! SheBang #!<interpreter> [optional-arg]
+
+"""
+Run this script before deploying it on Replicate to pre-download model weights,
+which avoids long download times during runtime.
+"""
+
+# Standard library imports
+import os
+import sys
+import shutil
+
+# Add current directory to sys.path
+sys.path.append('.')
+
+# Third-party imports
+import torch
+from diffusers import (
+    StableCascadeDecoderPipeline,
+    StableCascadePriorPipeline,
+    StableCascadeUNet,
+)
+
+# Local imports
+from predict import (
+    PRIOR_CACHE, 
+    DECODER_CACHE,
+    PRIOR_REPO_CACHE,
+    DECODER_REPO_CACHE,
+    PRIOR_ID, 
+    DECODER_ID,
+    DTYPE,
+)
+
+# Set environment variables
+# Enable hf_transfer for faster uploads and downloads from the Hub
+# https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhubenablehftransfer
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+
+
+def main():
+    # Load prior U-Net
+    prior_unet = StableCascadeUNet.from_single_file(
+        os.path.join(DECODER_REPO_CACHE, "stage_c_lite_bf16.safetensors"),
+        torch_dtype=DTYPE,
+    )
+    
+    # Load decoder U-Net
+    decoder_unet = StableCascadeUNet.from_single_file(
+        os.path.join(DECODER_REPO_CACHE, "stage_b_lite_bf16.safetensors"),
+        torch_dtype=DTYPE,
+    )
+    
+    # Load prior
+    prior = StableCascadePriorPipeline.from_pretrained(
+        PRIOR_REPO_CACHE,
+        prior=prior_unet,
+        variant="bf16",
+        torch_dtype=DTYPE,
+        use_safetensors=True,
+    )
+
+    # Load decoder
+    decoder = StableCascadeDecoderPipeline.from_pretrained(
+        DECODER_REPO_CACHE,
+        decoder=decoder_unet,
+        variant="bf16", 
+        torch_dtype=DTYPE,
+        use_safetensors=True,
+    )
+
+    # TODO: Optimize the saved pipeline to include only necessary components (unet, tokenizer, config)
+    prior.save_pretrained(PRIOR_CACHE, safe_serialization=True, variant="bf16")
+    decoder.save_pretrained(DECODER_CACHE, safe_serialization=True, variant="bf16")
+    
+    # Delete original model directory to decrease the size of the Docker image
+    dir_to_delete = [PRIOR_REPO_CACHE, DECODER_REPO_CACHE]
+    for dirname in dir_to_delete:
+        shutil.rmtree(dirname)
+
+
+if __name__ == "__main__":
+    main()
