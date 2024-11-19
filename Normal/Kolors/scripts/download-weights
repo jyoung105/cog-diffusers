@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Download repo
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download Kwai-Kolors/Kolors-diffusers --local-dir ./repo-cache --local-dir-use-symlinks False
