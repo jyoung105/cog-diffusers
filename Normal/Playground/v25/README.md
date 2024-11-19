@@ -8,7 +8,7 @@ Playground v2.5: Three Insights towards Enhancing Aesthetic Quality in Text-to-I
 
 [![Project](https://img.shields.io/badge/Project-8A2BE2)](https://playground.com/blog/playground-v2-5)
 [![arXiv](https://img.shields.io/badge/arXiv-2402.17245v1-b31b1b.svg)](https://arxiv.org/html/2402.17245v1)
-[![Hugging Face](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](playgroundai/playground-v2.5-1024px-aesthetic)
+[![Hugging Face](https://img.shields.io/badge/🤗%20Huggingface-Model-yellow)](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
 
 ## Example
 
