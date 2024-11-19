@@ -1,0 +1,31 @@
+# Configuration for Cog ⚙️
+# Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+
+image: "r8.im/jyoung105/auraflow-v2"
+build:
+  gpu: true
+  cuda: "12.4"
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+    - "wget"
+    - "git"
+  python_version: "3.12"
+  python_packages:
+    - "omegaconf==2.3.0"
+    - "einops==0.8.0"
+    - "torch==2.4.1"
+    - "torchvision==0.19.1"
+    - "transformers==4.46.2"
+    - "diffusers==0.31.0"
+    - "accelerate==1.1.0"
+    - "safetensors==0.4.5"
+    - "huggingface_hub==0.26.2"
+    - "hf_transfer==0.1.8"
+    - "sentencepiece==0.2.0"
+    - "protobuf"
+    
+  run:
+    - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/latest/download/pget_$(uname -s)_$(uname -m)" && chmod +x /usr/local/bin/pget
+
+predict: "predict.py:Predictor"
