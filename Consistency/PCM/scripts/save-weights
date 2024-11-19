@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+
+# #! SheBang #!<interpreter> [optional-arg]
+
+"""
+Run this script before deploying it on Replicate to pre-download model weights,
+which avoids long download times during runtime.
+"""
+
+# Standard library imports
+import os
+import sys
+
+# Add current directory to sys.path
+sys.path.append('.')
+
+# Third-party imports
+import torch
+from diffusers import (
+    StableDiffusionXLPipeline, 
+    AutoencoderKL, 
+    DDIMScheduler,
+)
+from huggingface_hub import hf_hub_download
+
+# Local imports
+from predict import (
+    TOTAL_CACHE,
+    MODEL_ID,
+    MODEL_CACHE,
+    VAE_ID,
+    PCM_ID,
+    PCM_FILE,
+    PCM_CACHE,
+    DTYPE,
+)
+
+# Set environment variables
+# Enable hf_transfer for faster uploads and downloads from the Hub
+# https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhubenablehftransfer
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+
+
+def main():
+    # Load VAE
+    vae = AutoencoderKL.from_single_file(
+        os.path.join(TOTAL_CACHE, "sdxl.vae.safetensors"),
+        torch_dtype=DTYPE,
+    )
+
+    # Load pipeline
+    pipe = StableDiffusionXLPipeline.from_single_file(
+        os.path.join(TOTAL_CACHE, "sd_xl_base_1.0.safetensors"),
+        vae=vae,
+        torch_dtype=DTYPE,
+        use_safetensors=True,
+    )
+
+    # Set scheduler
+    pipe.scheduler = DDIMScheduler.from_config(
+        pipe.scheduler.config,
+        clip_sample=False,
+        set_alpha_to_one=False,
+        timestep_spacing="trailing",
+    )
+
+    # TODO: Optimize the saved pipeline to include only necessary components (unet, tokenizer, config)
+    pipe.save_pretrained(MODEL_CACHE, safe_serialization=True, variant="fp16")
+
+    # Delete original model files to decrease the size of the Docker image
+    files_to_delete = ["sdxl.vae.safetensors", "sd_xl_base_1.0.safetensors"]
+    for filename in files_to_delete:
+        filepath = os.path.join(TOTAL_CACHE, filename)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+
+
+if __name__ == "__main__":
+    main()

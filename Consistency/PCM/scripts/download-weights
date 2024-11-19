@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Download VAE
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download madebyollin/sdxl-vae-fp16-fix sdxl.vae.safetensors --local-dir ./cache --local-dir-use-symlinks False
+
+# Download model
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download stabilityai/stable-diffusion-xl-base-1.0 sd_xl_base_1.0.safetensors --local-dir ./cache --local-dir-use-symlinks False
+
+# Download LoRA
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download wangfuyun/PCM_Weights sdxl/pcm_sdxl_normalcfg_8step_converted.safetensors --local-dir ./pcm-cache --local-dir-use-symlinks False
+
+# Download embeddings
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download jyoung105/general-neg ac_neg1.safetensors --local-dir ./cache --local-dir-use-symlinks False
+HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download jyoung105/general-neg ac_neg2.safetensors --local-dir ./cache --local-dir-use-symlinks False
